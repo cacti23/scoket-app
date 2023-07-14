@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat App</title>
+  <style>
+    #messages {
+      height: 300px;
+      border: 1px solid black;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Chat App</h1>
+  <div id="messages"></div>
+  <form id="room-form">
+    <input id="room" type="text" placeholder="Enter room name" required>
+    <input id="passphrase" type="text" placeholder="Enter passphrase" required>
+    <button type="submit">Create Room</button>
+  </form>
+
+  <form id="join-room-form">
+    <input id="join-room" type="text" placeholder="Enter room name" required>
+    <input id="join-passphrase" type="text" placeholder="Enter passphrase" required>
+    <button type="submit">Join Room</button>
+  </form>
+
+  <form id="message-form">
+    <input id="message" type="text" placeholder="Enter message" required>
+    <button id="send" type="submit">Send</button>
+  </form>
+
+  <div id="updates"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const socket = io();
+
+      const createRoomForm = document.getElementById('room-form');
+      createRoomForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const room = document.getElementById('room').value;
+        const passphrase = document.getElementById('passphrase').value;
+        socket.emit('create room', { room: room, passphrase: passphrase });
+        createRoomForm.reset();
+      });
+
+      const joinRoomForm = document.getElementById('join-room-form');
+      joinRoomForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const room = document.getElementById('join-room').value;
+        const passphrase = document.getElementById('join-passphrase').value;
+        socket.emit('join room', { room: room, passphrase: passphrase });
+        joinRoomForm.reset();
+      });
+
+      document.getElementById('message-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const message = document.getElementById('message').value;
+        socket.emit('chat message', message);
+        document.getElementById('message').value = '';
+      });
+
+      socket.on('chat message', function (msg) {
+        document.getElementById('messages') += `<p>${msg}</p>`
+      });
+
+      socket.on('update', function (msg) {
+        document.getElementById('updates') += `<p>${msg}</p>`
+      });
+
+    });
+  </script>
+
+
+</body>
+
+</html>
